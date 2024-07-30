@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "../styles/Home.module.css";
@@ -9,7 +8,7 @@ import { CONTRACT_ADDRESS, ABI } from "../contracts/index.js";
 
 export default function Staking() {
   const { isConnected, address } = useAccount();
-  //const provider = useProvider();
+  const provider = useProvider();
   const { data: signer } = useSigner();
 
   const [walletBalance, setWalletBalance] = useState("");
@@ -40,6 +39,29 @@ export default function Staking() {
   //     getWalletBalance();
   //   }
   // }, [isConnected]);
+  useEffect(() => {
+    async function getWalletBalance() {
+      try {
+        // Connect to the Polygon network
+        const provider = new ethers.providers.JsonRpcProvider("https://80002.rpc.thirdweb.com/");
+
+        // Get the balance of the address
+        const balance = await provider.getBalance(address);
+
+        // Convert the balance from wei to ether
+        const balanceInEther = ethers.utils.formatEther(balance);
+
+        // Update the state with the balance
+        setWalletBalance(balanceInEther);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    }
+
+    if (address) {
+      getWalletBalance();
+    }
+  }, [address]);
 
   const contract = useContract({
     address: CONTRACT_ADDRESS,
@@ -96,22 +118,13 @@ export default function Staking() {
   };
 
   const stakeEther = async (stakingLength) => {
-    if (!signer) {
-        window.alert("Please connect your wallet to stake");
-        return;
-    }
-
-    try {
-        const wei = toWei(String(amount));
-        const data = { value: wei };
-        await contract.connect(signer).stakeEther(stakingLength, data);
-    } catch (error) {
-        console.error("Error during staking:", error);
-    }
-};
+    const wei = toWei(String(amount));
+    const data = { value: wei };
+    await contract.stakeEther(stakingLength, data);
+  };
 
   const withdraw = (positionId) => {
-    contract.connect(signer).closePosition(positionId);
+    contract.closePosition(positionId);
   };
 
   return (
@@ -154,6 +167,7 @@ export default function Staking() {
                   <span>{(walletBalance / 10 ** 18).toLocaleString()}</span>
                 </p>
                 <p>Exchange Rate: 1.03582967</p>
+                {/* <p>Transaction Cost</p> */}
               </section>
               <button
                 className={styles.stakeBtn}
@@ -187,6 +201,7 @@ export default function Staking() {
                       }
                     })}
                 </p>
+                {/* <p>Transaction Cost</p> */}
                 <p>
                   You Receive: {unstakeValue == 0 ? "" : unstakeValue * 1.07}
                 </p>

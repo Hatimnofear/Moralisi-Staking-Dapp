@@ -8,37 +8,16 @@ const [account, setAccount] = useState('');
 const [web3, setWeb3] = useState(null);
 
 useEffect(() => {
-    const initializeWeb3 = async () => {
-        if (window.ethereum) {
-            const web3Instance = new Web3(window.ethereum);
-            setWeb3(web3Instance);
-            try {
-                const accounts = await web3Instance.eth.requestAccounts();
-                setAccount(accounts[0] || '');
-            } catch (error) {
-                console.error("Error connecting to accounts:", error);
-            }
-            window.ethereum.on('accountsChanged', (accounts) => {
-                setAccount(accounts[0] || '');
-            });
-        } else if (window.web3) {
-            const web3Instance = new Web3(window.web3.currentProvider);
-            setWeb3(web3Instance);
-            try {
-                const accounts = await web3Instance.eth.getAccounts();
-                setAccount(accounts[0] || '');
-            } catch (error) {
-                console.error("Error fetching accounts:", error);
-            }
-        } else {
-            window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
-        }
-    };
-
-    initializeWeb3();
+    if (window.ethereum) {
+    const web3Instance = new Web3(window.ethereum);
+    setWeb3(web3Instance);
+    } else if (window.web3) {
+    const web3Instance = new Web3(window.web3.currentProvider);
+    setWeb3(web3Instance);
+    } else {
+    window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    }
 }, []);
-
-
 
 const connectWallet = async () => {
     if (web3) {
@@ -56,7 +35,6 @@ const shortenAddress = (address) => {
 };
 
 return (
-    
     <section className={styles.header}>
     <section className={styles.header_logoSection}>
         <h1 className={styles.title}>Beans Staking</h1>
